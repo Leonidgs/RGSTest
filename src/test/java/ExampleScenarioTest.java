@@ -2,10 +2,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -47,7 +44,7 @@ public class ExampleScenarioTest {
         WebElement travellersInsuranceButton = driver.findElement(By.xpath(sberInsuranceButtonXPath));
         travellersInsuranceButton.click();
 
-        // проверка открытия страницы "Оформление страхования"
+        // проверка открытия страницы "Страхование"
         Assert.assertEquals("Заголовок отсутствует/не соответствует требуемому",
                 "Оформить страховку в СберБанке — СберБанк", driver.getTitle());
 
@@ -57,7 +54,7 @@ public class ExampleScenarioTest {
         scrollToElementJs(travellersInsuranceHeader);
 
         // нажать кнопку "Оформить онлайн"
-        String checkoutOnlineXPath = "../../following::div/a[1]";
+        String checkoutOnlineXPath = "../../following-sibling::div//b[text()='Оформить онлайн']/..";
         WebElement checkoutOnlineButton = travellersInsuranceHeader.findElement(By.xpath(checkoutOnlineXPath));
         waitUtilElementToBeClickable(checkoutOnlineButton);
         checkoutOnlineButton.click();
