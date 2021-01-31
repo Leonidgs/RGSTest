@@ -34,45 +34,40 @@ public class ExampleScenarioTest {
 
     @Test
     public void exampleScenario() {
+
         // выбрать пункт меню - "Страхование"
-        String insuranceButtonXPath = "//a[@aria-label='Меню  Страхование']";
+        String insuranceButtonXPath = "//a[@aria-label='Страхование']";
         List<WebElement> insuranceButtonList = driver.findElements(By.xpath(insuranceButtonXPath));
         if (!insuranceButtonList.isEmpty()){
             insuranceButtonList.get(0).click();
         }
 
-        // выбрать пункт подменю - "СберСтрахование"
-        String sberInsuranceButtonXPath = "//a[text()='СберСтрахование' and contains(@class, 'link_second')]";
+        // выбрать пункт подменю - "Перейти в каталог"
+        String sberInsuranceButtonXPath = "//a[text()='Перейти в каталог' and contains(@class, 'link_second')]";
         WebElement travellersInsuranceButton = driver.findElement(By.xpath(sberInsuranceButtonXPath));
         travellersInsuranceButton.click();
 
-        // проверка открытия страницы "СберСтрахование"
+        // проверка открытия страницы "Оформление страхования"
         Assert.assertEquals("Заголовок отсутствует/не соответствует требуемому",
-                "СберСтрахование - СберБанк", driver.getTitle());
+                "Оформить страховку в СберБанке — СберБанк", driver.getTitle());
 
         // перейти к опции "Страхование путешественников"
-        String travellersInsuranceHeaderXPath = "//div[normalize-space()='Страхованиепутешественников']/div";
+        String travellersInsuranceHeaderXPath = "//h3[text()='Страхование для путешественников']";
         WebElement travellersInsuranceHeader = driver.findElement(By.xpath(travellersInsuranceHeaderXPath));
         scrollToElementJs(travellersInsuranceHeader);
 
         // нажать кнопку "Оформить онлайн"
-        String checkoutOnlineXPath = "../following::div/a[text()='Оформить онлайн'][1]";
+        String checkoutOnlineXPath = "../../following::div/a[1]";
         WebElement checkoutOnlineButton = travellersInsuranceHeader.findElement(By.xpath(checkoutOnlineXPath));
         waitUtilElementToBeClickable(checkoutOnlineButton);
         checkoutOnlineButton.click();
 
         // проверка открытия страницы "Страхование путешественников"
-        String pageTitleXPath = "//h1[contains(@class, 's-hero-banner')]";
+        String pageTitleXPath = "//h2";
         waitUtilElementToBeVisible(By.xpath(pageTitleXPath));
         WebElement pageTitle = driver.findElement(By.xpath(pageTitleXPath));
         Assert.assertEquals("Заголовок отсутствует/не соответствует требуемому",
                 "Страхование путешественников", pageTitle.getText());
-
-        // нажать кнопку "Оформить онлайн"
-        String checkoutOnlineAgainXPath = "//a[contains(@class, 's-hero-banner')]";
-        WebElement checkoutOnlineAgainButton = driver.findElement(By.xpath(checkoutOnlineAgainXPath));
-        waitUtilElementToBeClickable(checkoutOnlineAgainButton);
-        checkoutOnlineAgainButton.click();
 
         // выбрать тариф страхования "Минимальный"
         String insuranceCoverageAmountXPath = "//h3[text()='Минимальная']";
