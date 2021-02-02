@@ -4,6 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -17,102 +19,128 @@ public class ExampleScenarioTest {
 
     @Before
     public void before() {
+
+        //Create a instance of ChromeOptions class
+        ChromeOptions options = new ChromeOptions();
+
+//Add chrome switch to disable notification - "**--disable-notifications**"
+        options.addArguments("--disable-notifications");
+
+
         System.setProperty("webdriver.chrome.driver", "webdriver/chromedriver.exe");
-        driver = new ChromeDriver();
+        driver = new ChromeDriver(options);
+
         driver.manage().window().maximize();
-        driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.SECONDS);
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
+        new WebDriverWait(driver, 1).until(
+                webDriver -> ((JavascriptExecutor) webDriver).
+                        executeScript("return document.readyState").equals("complete"));
         wait = new WebDriverWait(driver, 10, 1000);
+        String baseUrl = "https://www.rgs.ru/";
+        //String baseUrl = "https://www.rgs.ru/products/juristic_person/health/dms/index.wbp";
 
-        String baseUrl = "https://www.sberbank.ru/ru/person";
         driver.get(baseUrl);
     }
 
     @Test
-    public void exampleScenario() {
+    public void exampleScenario() throws InterruptedException {
 
-        // выбрать пункт меню - "Страхование"
-        String insuranceButtonXPath = "//a[@aria-label='Страхование']";
-        List<WebElement> insuranceButtonList = driver.findElements(By.xpath(insuranceButtonXPath));
-        if (!insuranceButtonList.isEmpty()){
-            insuranceButtonList.get(0).click();
-        }
+       //Стартуем
+        String insuranceButtonXPath = "//a[contains(text(), 'Меню') and @class='hidden-xs']";
+        WebElement element = driver.findElement(By.xpath(insuranceButtonXPath));
+        //waitUtilElementToBeClickable(element);
+        element.click();
 
-        // выбрать пункт подменю - "Перейти в каталог"
-        String sberInsuranceButtonXPath = "//a[text()='Перейти в каталог' and contains(@class, 'link_second')]";
+       //Выбираем жмём кнопку Компаниям
+        String sberInsuranceButtonXPath = "//a[@href='https://www.rgs.ru/products/juristic_person/index.wbp']";
         WebElement travellersInsuranceButton = driver.findElement(By.xpath(sberInsuranceButtonXPath));
         travellersInsuranceButton.click();
 
-        // проверка открытия страницы "Страхование"
+        //Проверяем что зашли на страницу компаниям
         Assert.assertEquals("Заголовок отсутствует/не соответствует требуемому",
-                "Оформить страховку в СберБанке — СберБанк", driver.getTitle());
+                "Корпоративное страхование для компаний | Росгосстрах", driver.getTitle());
 
-        // перейти к опции "Страхование путешественников"
-        String travellersInsuranceHeaderXPath = "//h3[text()='Страхование для путешественников']";
-        WebElement travellersInsuranceHeader = driver.findElement(By.xpath(travellersInsuranceHeaderXPath));
-        scrollToElementJs(travellersInsuranceHeader);
+        //Переходим к здоровью
+        String checkoutOnlineXPath = "//a[contains(text(), 'Здоровье') and @href='/products/juristic_person/health/index.wbp']";
+        wait = new WebDriverWait(driver, 10);
+        WebElement element1 =
+                wait.until(ExpectedConditions.elementToBeClickable(By.xpath(checkoutOnlineXPath)));
+        element1.click();
 
-        // нажать кнопку "Оформить онлайн"
-        String checkoutOnlineXPath = "../../following-sibling::div//b[text()='Оформить онлайн']/..";
-        WebElement checkoutOnlineButton = travellersInsuranceHeader.findElement(By.xpath(checkoutOnlineXPath));
-        waitUtilElementToBeClickable(checkoutOnlineButton);
-        checkoutOnlineButton.click();
-
-        // проверка открытия страницы "Страхование путешественников"
-        String pageTitleXPath = "//h2";
-        waitUtilElementToBeVisible(By.xpath(pageTitleXPath));
-        WebElement pageTitle = driver.findElement(By.xpath(pageTitleXPath));
         Assert.assertEquals("Заголовок отсутствует/не соответствует требуемому",
-                "Страхование путешественников", pageTitle.getText());
+                "ДМС для сотрудников - добровольное медицинское страхование от Росгосстраха", driver.getTitle());
 
-        // выбрать тариф страхования "Минимальный"
-        String insuranceCoverageAmountXPath = "//h3[text()='Минимальная']";
-        WebElement insuranceCoverageAmount = driver.findElement(By.xpath(insuranceCoverageAmountXPath));
-        scrollToElementJs(insuranceCoverageAmount);
-        waitUtilElementToBeClickable(insuranceCoverageAmount);
-        insuranceCoverageAmount.click();
+        //Нажимаем добровольное мед страхование
+        String s = "//a[contains(text(), 'Добровольное медицинское страхование') and @href='/products/juristic_person/health/dms/index.wbp']";
+        WebElement element2 =
+                wait.until(ExpectedConditions.elementToBeClickable(By.xpath(s)));
+        element2.click();
 
-        // кликнуть по кнопке "Оформить"
-        String checkoutButtonXPath = "//button[text()='Оформить']";
-        WebElement checkoutButton = driver.findElement(By.xpath(checkoutButtonXPath));
-        scrollToElementJs(checkoutButton);
-        waitUtilElementToBeClickable(checkoutButton);
-        checkoutButton.click();
+        Assert.assertEquals("Заголовок отсутствует/не соответствует требуемому",
+                "Добровольное медицинское страхование в Росгосстрахе", driver.getTitle());
 
-        // заполнить поля данными
-        String fieldXPath = "//input[@id='%s']";
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "surname_vzr_ins_0"))), "Застрахованный");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "name_vzr_ins_0"))), "Степан");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "birthDate_vzr_ins_0"))), "01.01.1990");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "person_lastName"))), "Страхователь");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "person_firstName"))), "Иван");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "person_middleName"))), "Иванович");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "person_birthDate"))), "02.02.1992");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "passportSeries"))), "4444");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "passportNumber"))), "777666");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "documentDate"))), "09.09.2009");
-        fillInputField(driver.findElement(By.xpath(String.format(fieldXPath, "documentIssue"))), "Паспортный стол");
+        //открываем форму
+        String ss = "//a[contains(text(), 'Отправить заявку') and @href='#']";
+        WebElement element3 =
+                wait.until(ExpectedConditions.elementToBeClickable(By.xpath(ss)));
+        element3.click();
 
-        // кликнуть по кнопке "Продолжить"
-        String continueButtonXPath = "//button[contains(text(),'Продолжить')]";
-        WebElement continueButton = driver.findElement(By.xpath(continueButtonXPath));
-        scrollToElementJs(continueButton);
-        waitUtilElementToBeClickable(continueButton);
-        continueButton.click();
+        //Поле Фамилия
+        String xpathlastName = "//*[@name='LastName']";
+        WebElement checkoutOnlineButton123 = driver.findElement(By.xpath(xpathlastName));
+        checkoutOnlineButton123.sendKeys("Имя");
 
-        // проверить сообщение об ошибке
-        checkErrorMessageAtField(driver.findElement(By.xpath(String.format(fieldXPath, "phone"))), "Поле не заполнено.");
-        checkErrorMessageAtField(driver.findElement(By.xpath(String.format(fieldXPath, "email"))), "Поле не заполнено.");
-        checkErrorMessageAtField(driver.findElement(By.xpath(String.format(fieldXPath, "repeatEmail"))), "Поле не заполнено.");
 
-        // проверить сообщение об ошибке
-        String errorAlertXPath = "//div[@class='alert-form alert-form-error']";
-        WebElement errorAlert = driver.findElement(By.xpath(errorAlertXPath));
-        scrollToElementJs(errorAlert);
-        waitUtilElementToBeVisible(errorAlert);
-        Assert.assertEquals("Проверка ошибки у alert на странице не была пройдено",
-                "При заполнении данных произошла ошибка", errorAlert.getText());
+        //Поле имя
+        String xpathFirstName = "//*[@name='FirstName']";
+        WebElement checkoutOnlineButton1234 = driver.findElement(By.xpath(xpathFirstName));
+        checkoutOnlineButton1234.sendKeys("Фамилия");
+
+
+        //Поле Отчество
+        String xpathMiddleName = "//*[@name='MiddleName']";
+        WebElement checkoutOnlineButton4 = driver.findElement(By.xpath(xpathMiddleName));
+        checkoutOnlineButton4.sendKeys("Отчество");
+
+
+        //Здесь место под выпадающий список регионов
+        String moscow = "//*[@name='Region']";
+        WebElement checkoutOnlineButton8 = driver.findElement(By.xpath(moscow));
+        checkoutOnlineButton8.sendKeys("М" + "\n");
+
+
+        //Поле телефон
+        String number = "//*[contains(@data-bind,'Phone')]";
+        WebElement checkoutOnlineButton5 = driver.findElement(By.xpath(number));
+        checkoutOnlineButton5.click();
+
+        checkoutOnlineButton5.sendKeys("7777777777" + "\n");
+
+        //Заполняем почту
+
+        String forEmail = "//*[@name='Email']";
+        WebElement checkoutOnlineButton7 = driver.findElement(By.xpath(forEmail));
+        checkoutOnlineButton7.sendKeys("qwertyyyyyyyyyyyyyyy");
+
+
+        //Выбираем дату
+        String numberes = "//*[@name='ContactDate']";
+        WebElement checkoutOnlineButton6 = driver.findElement(By.xpath(numberes));
+        checkoutOnlineButton6.sendKeys("12122020 " + "\n");
+
+
+        //Соглашаемся с условиями
+        String agree = "//*[@type='checkbox']";
+        WebElement galochka = driver.findElement(By.xpath(agree));
+        galochka.click();
+
+
+        //Отправляем заполненную форму
+        String end = "//button[@id='button-m']";
+        WebElement sendForm = driver.findElement(By.xpath(end));
+        sendForm.click();
+
+
     }
 
     @After
