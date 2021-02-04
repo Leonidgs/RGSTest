@@ -20,30 +20,24 @@ public class ExampleScenarioTest {
     @Before
     public void before() {
 
-        //Create a instance of ChromeOptions class
         ChromeOptions options = new ChromeOptions();
-
-//Add chrome switch to disable notification - "**--disable-notifications**"
         options.addArguments("--disable-notifications");
 
 
         System.setProperty("webdriver.chrome.driver", "webdriver/chromedriver.exe");
         driver = new ChromeDriver(options);
-
         driver.manage().window().maximize();
+        String baseUrl = "https://www.rgs.ru/";
+        driver.get(baseUrl);
 
         new WebDriverWait(driver, 1).until(
                 webDriver -> ((JavascriptExecutor) webDriver).
                         executeScript("return document.readyState").equals("complete"));
         wait = new WebDriverWait(driver, 10, 1000);
-        String baseUrl = "https://www.rgs.ru/";
-        //String baseUrl = "https://www.rgs.ru/products/juristic_person/health/dms/index.wbp";
-
-        driver.get(baseUrl);
     }
 
     @Test
-    public void exampleScenario() throws InterruptedException {
+    public void exampleScenario() {
 
        //Стартуем
         String insuranceButtonXPath = "//a[contains(text(), 'Меню') and @class='hidden-xs']";
@@ -71,9 +65,9 @@ public class ExampleScenarioTest {
                 "ДМС для сотрудников - добровольное медицинское страхование от Росгосстраха", driver.getTitle());
 
         //Нажимаем добровольное мед страхование
-        String s = "//a[contains(text(), 'Добровольное медицинское страхование') and @href='/products/juristic_person/health/dms/index.wbp']";
+        String w = "//*[@href='/products/juristic_person/health/dms/index.wbp' and @class='list-group-item adv-analytics-navigation-line4-link']";
         WebElement element2 =
-                wait.until(ExpectedConditions.elementToBeClickable(By.xpath(s)));
+                wait.until(ExpectedConditions.elementToBeClickable(By.xpath(w)));
         element2.click();
 
         Assert.assertEquals("Заголовок отсутствует/не соответствует требуемому",
@@ -103,7 +97,7 @@ public class ExampleScenarioTest {
         checkoutOnlineButton4.sendKeys("Отчество");
 
 
-        //Здесь место под выпадающий список регионов
+        //Выбор региона
         String moscow = "//*[@name='Region']";
         WebElement checkoutOnlineButton8 = driver.findElement(By.xpath(moscow));
         checkoutOnlineButton8.sendKeys("М" + "\n");
@@ -117,11 +111,9 @@ public class ExampleScenarioTest {
         checkoutOnlineButton5.sendKeys("7777777777" + "\n");
 
         //Заполняем почту
-
         String forEmail = "//*[@name='Email']";
         WebElement checkoutOnlineButton7 = driver.findElement(By.xpath(forEmail));
         checkoutOnlineButton7.sendKeys("qwertyyyyyyyyyyyyyyy");
-
 
         //Выбираем дату
         String numberes = "//*[@name='ContactDate']";
@@ -134,13 +126,14 @@ public class ExampleScenarioTest {
         WebElement galochka = driver.findElement(By.xpath(agree));
         galochka.click();
 
-
         //Отправляем заполненную форму
         String end = "//button[@id='button-m']";
         WebElement sendForm = driver.findElement(By.xpath(end));
         sendForm.click();
 
-
+        //Проверяем что почта заполнена не верно
+        String neee = "//*[contains(text(), 'Введите адрес электронной почты')]";
+        checkErrorMessageAtField(driver.findElement(By.xpath(neee)), "Введите адрес электронной почты");
     }
 
     @After
